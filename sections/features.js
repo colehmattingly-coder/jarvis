@@ -27,6 +27,19 @@ section("features", () => `
     #features .feature-note { padding: 18px 25px; border-top: 1px solid #29384b; color: #91a3ba; font-size: 12px; margin: 0; }
     #features .feature-site-context { margin: 14px 4px 0; color: #91a3ba; font-size: 12px; }
     #features .feature-site-context strong { color: #c4d2e3; }
+    #features .analysis-panel { padding: 28px; border-top: 1px solid #29384b; }
+    #features .analysis-panel label { display: block; font-weight: 650; margin: 16px 0 8px; }
+    #features .analysis-panel input { max-width: 100%; color: #eef3fa; }
+    #features .analysis-panel input::file-selector-button { padding: 12px 16px; margin-right: 12px; border: 0; border-radius: 8px; background: var(--feature-accent); cursor: pointer; }
+    #features .analysis-panel p { color: #a9b8cb; font-size: 14px; }
+    #features #analysis-status { min-height: 24px; color: #ffcf70; }
+    #features #analysis-photo { display: block; max-width: 100%; max-height: 650px; width: auto; height: auto; margin: 20px auto; border-radius: 12px; }
+    #features [hidden] { display: none !important; }
+    #features .analysis-total { font-size: 32px; font-weight: 750; color: var(--feature-accent); }
+    #features .analysis-table-wrap { overflow-x: auto; }
+    #features table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    #features th { font-weight: 600; }
+    #features th, #features td { padding: 12px 10px; border-bottom: 1px solid #29384b; }
     @media (max-width: 640px) {
       #features .feature-heading { padding: 26px 22px; }
       #features .feature-demo { grid-template-columns: 1fr; margin: 0 14px 20px; }
@@ -70,7 +83,7 @@ section("features", () => `
       <div class="feature-detail">
         <span class="feature-pill">Designed for clarity</span>
         <h3>See the points.<br>Understand the proportions.</h3>
-        <p>The planned detector maps up to 478 facial landmarks onto your photo, with key reference points labeled so you can see where each measurement starts.</p>
+        <p>The detector maps 478 facial landmarks onto your photo, with key reference points labeled so you can see where each measurement starts.</p>
         <div class="feature-measures" aria-label="Planned measurement categories"><span>Angles</span><span>Ratios</span><span>Proportions</span></div>
       </div>
     </div>
@@ -78,20 +91,40 @@ section("features", () => `
       <article class="feature-card">
         <span class="feature-number">01 / CAPTURE</span>
         <h3>Two views. More context.</h3>
-        <p>Planned front and side JPG or PNG uploads offer complementary views of facial proportions and profile angles.</p>
+        <p>Upload a front JPG or PNG to explore facial proportions. Side-profile analysis is coming soon.</p>
       </article>
       <article class="feature-card">
         <span class="feature-number">02 / EXPLORE</span>
         <h3>Geometry you can see.</h3>
-        <p>A landmark overlay will make reference points visible. Clear feedback will flag images that are too small or contain no detectable face.</p>
+        <p>A landmark overlay makes reference points visible. Clear feedback flags images that are too small or contain no detectable face.</p>
       </article>
       <article class="feature-card">
         <span class="feature-number">03 / STAY PRIVATE</span>
         <h3>Your photos stay yours.</h3>
-        <p>The planned analysis runs in your browser. Photos will stay on your device, with no image uploads to a server.</p>
+        <p>Analysis runs in your browser. Photos stay on your device, with no image uploads to a server.</p>
       </article>
     </div>
-    <p class="feature-note">Geometry describes proportions; it does not establish an objective beauty score. Camera angle, lighting and pose can affect measurements. This section previews the concept; detection is not connected yet.</p>
+    <div class="analysis-panel" aria-labelledby="analysis-heading">
+      <h3 id="analysis-heading">Try your front photo</h3>
+      <p>Use a JPG or PNG, at least 256 × 256 pixels, up to 20 MB. Hold the camera at arm’s length and eye level, look straight ahead, keep a neutral expression, and move hair off your face.</p>
+      <label for="front-photo">Choose a front photo</label>
+      <input id="front-photo" type="file" accept="image/jpeg,image/png" aria-describedby="analysis-status">
+      <p>Your photo stays in this browser. Only detector assets are downloaded.</p>
+      <p id="analysis-status" role="status" aria-live="polite"></p>
+      <canvas id="analysis-photo" hidden aria-label="Uploaded photo with facial landmarks. Gold dots and numbers identify key reference points."></canvas>
+      <div id="analysis-results" hidden aria-labelledby="proportion-label">
+        <h3 id="proportion-label">Proportion Score</h3>
+        <div class="analysis-total"><span id="proportion-total"></span> / 10</div>
+        <p id="proportion-note">Measures similarity to reference ratios; photo angle affects results.</p>
+        <p>Targets are editable example references, not validated scientific standards. Profile angles: coming soon.</p>
+        <div class="analysis-table-wrap"><table>
+          <caption>Front measurements and reference targets; metric scores use a 0–10 scale.</caption>
+          <thead><tr><th scope="col">Measurement</th><th scope="col">Your value</th><th scope="col">Target range</th><th scope="col">Metric score</th></tr></thead>
+          <tbody id="measurement-rows"></tbody>
+        </table></div>
+      </div>
+    </div>
+    <p class="feature-note"><strong>Proportion Score</strong><br>Measures similarity to reference ratios; photo angle affects results.</p>
   </div>
   <p class="feature-site-context"><strong>${SITE.name}</strong> · ${SITE.tagline}</p>
 `);
