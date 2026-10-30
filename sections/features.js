@@ -40,6 +40,15 @@ section("features", () => `
     #features table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
     #features th { font-weight: 600; }
     #features th, #features td { padding: 12px 10px; border-bottom: 1px solid #29384b; }
+    #features .analysis-panel button { padding: 10px 14px; border: 1px solid var(--feature-accent); border-radius: 8px; background: #172b3a; color: #eef3fa; cursor: pointer; margin: 8px 6px 8px 0; }
+    #features .analysis-panel button:disabled { opacity: .5; cursor: wait; }
+    #features .analysis-panel select { max-width: 100%; padding: 10px; background: #172b3a; color: #eef3fa; }
+    #features #side-viewport { overflow: auto; max-height: 650px; border: 1px solid #29384b; margin: 14px 0; }
+    #features #side-photo-canvas { display: block; height: auto; max-width: none; touch-action: none; cursor: crosshair; }
+    #features #side-photo-canvas:focus-visible { outline: 3px solid var(--feature-accent); outline-offset: -3px; }
+    #features #side-status { color: #ffcf70; }
+    #features #batch-output { white-space: pre-wrap; overflow-wrap: anywhere; color: #c4d2e3; font: 13px/1.6 system-ui; }
+    #features .profile-block, #features .batch-block { border-top: 1px solid #29384b; margin-top: 28px; padding-top: 20px; }
     @media (max-width: 640px) {
       #features .feature-heading { padding: 26px 22px; }
       #features .feature-demo { grid-template-columns: 1fr; margin: 0 14px 20px; }
@@ -91,7 +100,7 @@ section("features", () => `
       <article class="feature-card">
         <span class="feature-number">01 / CAPTURE</span>
         <h3>Two views. More context.</h3>
-        <p>Upload a front JPG or PNG to explore facial proportions. Side-profile analysis is coming soon.</p>
+        <p>Upload a front JPG or PNG to explore facial proportions. Use a side photo and manually placed markers for profile angles.</p>
       </article>
       <article class="feature-card">
         <span class="feature-number">02 / EXPLORE</span>
@@ -112,19 +121,48 @@ section("features", () => `
       <p>Your photo stays in this browser. Only detector assets are downloaded.</p>
       <p id="analysis-status" role="status" aria-live="polite"></p>
       <canvas id="analysis-photo" hidden aria-label="Uploaded photo with facial landmarks. Gold dots and numbers identify key reference points."></canvas>
+      <div class="profile-block" aria-labelledby="side-heading">
+        <h3 id="side-heading">Side profile photo</h3>
+        <p>Use a true side view, camera at eye level, head level, neutral expression, and hair off the face. JPG or PNG, at least 256 × 256 pixels, up to 20 MB.</p>
+        <label for="side-photo">Side profile photo</label>
+        <input id="side-photo" type="file" accept="image/jpeg,image/png" aria-describedby="side-status">
+        <p id="side-status" role="status" aria-live="polite"></p>
+        <div id="side-editor" hidden>
+          <p>These eight markers start at example positions, not detected features. Drag every marker to the named point, then confirm. Use “Mirror markers” if the face points left. Zoom and scroll for precision.</p>
+          <label for="side-zoom">Zoom <output id="side-zoom-value" for="side-zoom">1.0×</output></label>
+          <input id="side-zoom" type="range" min="1" max="4" step="0.1" value="1">
+          <label for="profile-marker">Selected marker</label>
+          <select id="profile-marker"></select>
+          <p id="marker-position"></p>
+          <div id="side-viewport"><canvas id="side-photo-canvas" tabindex="0" aria-label="Side profile marker editor" aria-describedby="marker-position"></canvas></div>
+          <button id="mirror-markers" type="button">Mirror markers</button>
+          <button id="confirm-markers" type="button">Confirm markers</button>
+          <button id="clear-side" type="button">Remove side photo</button>
+          <p id="profile-angle-values"></p>
+        </div>
+      </div>
       <div id="analysis-results" hidden aria-labelledby="proportion-label">
         <h3 id="proportion-label">Proportion Score</h3>
         <div class="analysis-total"><span id="proportion-total"></span> / 10</div>
-        <p id="proportion-note">Measures similarity to reference ratios; photo angle affects results.</p>
-        <p>Targets are editable example references, not validated scientific standards. Profile angles: coming soon.</p>
+        <p id="proportion-mode">front only</p>
+        <p id="proportion-note">Measures closeness to reference averages; photo angle affects results.</p>
+        <p>All reference means and standard deviations are placeholders to be calibrated, not validated scientific standards. Side placeholders: nasofrontal 122.5° ± 7.5°, nasolabial 100° ± 10°, mentolabial 120° ± 10°, convexity 170° ± 5°.</p>
         <div class="analysis-table-wrap"><table>
-          <caption>Front measurements and reference targets; metric scores use a 0–10 scale.</caption>
-          <thead><tr><th scope="col">Measurement</th><th scope="col">Your value</th><th scope="col">Target range</th><th scope="col">Metric score</th></tr></thead>
+          <caption>Contributions add to D²: weighted squared z-scores, normalized within each view. Confirmed front/side views contribute 60%/40%; without confirmed side markers, front contributes 100%.</caption>
+          <thead><tr><th scope="col">Measurement</th><th scope="col">Your value</th><th scope="col">Mean (placeholder)</th><th scope="col">z-score</th><th scope="col">Contribution to D²</th></tr></thead>
           <tbody id="measurement-rows"></tbody>
         </table></div>
       </div>
+      <div class="batch-block">
+        <h3>Check the score spread</h3>
+        <p>Choose multiple front photos. Each is processed locally, front only. Rejected photos are listed but excluded from min, median, and max. Results are also printed in the browser console.</p>
+        <label for="batch-photos">Front photos for batch analysis</label>
+        <input id="batch-photos" type="file" accept="image/jpeg,image/png" multiple>
+        <button id="batch-run" type="button">Run batch</button>
+        <pre id="batch-output" role="status" aria-live="polite"></pre>
+      </div>
     </div>
-    <p class="feature-note"><strong>Proportion Score</strong><br>Measures similarity to reference ratios; photo angle affects results.</p>
+    <p class="feature-note"><strong>Proportion Score</strong><br>Measures closeness to reference averages; photo angle affects results.</p>
   </div>
   <p class="feature-site-context"><strong>${SITE.name}</strong> · ${SITE.tagline}</p>
 `);
